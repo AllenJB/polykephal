@@ -23,6 +23,8 @@
 #include <QObject>
 #include <QtNetwork>
 
+#include "server.h"
+
 class PolykephalApp : public QObject
 {
 	Q_OBJECT
@@ -30,10 +32,7 @@ class PolykephalApp : public QObject
 	public:
 		PolykephalApp();
 
-	private slots:
-		void sendFortune();
-
 	private:
-		QTcpServer *tcpServer;
+		Server *m_server;
 
 };
