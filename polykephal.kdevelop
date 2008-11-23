@@ -14,7 +14,10 @@
     <absoluteprojectpath>false</absoluteprojectpath>
     <description></description>
     <defaultencoding></defaultencoding>
-    <versioncontrol></versioncontrol>
+    <versioncontrol/>
+    <ignoreparts>
+      <part>kdevdistpart</part>
+    </ignoreparts>
   </general>
   <kdevfileview>
     <groups>
@@ -22,6 +25,8 @@
       <group pattern="*.ui" name="User Interface" />
       <group pattern="*.png" name="Icons" />
       <group pattern="*" name="Others" />
+      <hidenonprojectfiles>false</hidenonprojectfiles>
+      <hidenonlocation>false</hidenonlocation>
     </groups>
     <tree>
       <hidenonprojectfiles>false</hidenonprojectfiles>
@@ -161,6 +166,7 @@
       <makebin></makebin>
       <prio>0</prio>
       <envvars>
+        <envvar value="C" name="LC_ALL" />
         <envvar value="/usr/lib/qt4" name="QTDIR" />
       </envvars>
     </make>
@@ -190,7 +196,7 @@
     <projectdoc>
       <docsystem>Doxygen Documentation Collection</docsystem>
       <docurl>polykephal.tag</docurl>
-      <usermanualurl></usermanualurl>
+      <usermanualurl/>
     </projectdoc>
   </kdevdocumentation>
   <cppsupportpart>
@@ -200,7 +206,7 @@
     </filetemplates>
   </cppsupportpart>
   <ctagspart>
-    <customArguments></customArguments>
+    <customArguments/>
     <customTagfilePath>/home/allen/svn/polykephal/trunk/tags</customTagfilePath>
     <activeTagsFiles/>
   </ctagspart>

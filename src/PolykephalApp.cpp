@@ -23,33 +23,14 @@
 #include "PolykephalApp.h"
 #include <QtNetwork>
 #include <string>
-#include <iostream>
 
 PolykephalApp::PolykephalApp () {
-	tcpServer = new QTcpServer(this);
-	if (!tcpServer->listen()) {
-		qDebug("Unable to start the server: %s\n", tcpServer->errorString());
+	m_server = new Server(this);
+	if (!m_server->listen()) {
+		qDebug("Unable to start the server: %s\n", m_server->errorString());
 		close(1);
 		return;
 	}
 
-	connect(tcpServer, SIGNAL(newConnection()), this, SLOT(sendFortune()));
-	qDebug("Server running on port %d!", tcpServer->serverPort());
-}
-
-void PolykephalApp::sendFortune() {
-	QByteArray block;
-	QDataStream out(&block, QIODevice::WriteOnly);
-	out.setVersion(QDataStream::Qt_4_0);
-	out << (quint16)0;
-	out << "foobar";
-	out.device()->seek(0);
-	out << (quint16)(block.size() - sizeof(quint16));
-
-	QTcpSocket *clientConnection = tcpServer->nextPendingConnection();
-	connect(clientConnection, SIGNAL(disconnected()),
-		clientConnection, SLOT(deleteLater()));
-
-	clientConnection->write(block);
-	clientConnection->disconnectFromHost();
+	qDebug("Server running on port %d!", m_server->serverPort());
 }
