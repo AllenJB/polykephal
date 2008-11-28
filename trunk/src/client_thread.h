@@ -26,6 +26,8 @@
 #include <QThread>
 #include <QTcpSocket>
 
+static const int MaxBufferSize = 1024000;
+
 class ClientThread : public QThread
 {
 	Q_OBJECT
@@ -34,12 +36,21 @@ class ClientThread : public QThread
 		ClientThread(int socketDescriptor, QObject *parent);
 
 		void run();
+		bool sendMessage(const QString &message);
 
 	signals:
 		void error(QTcpSocket::SocketError socketError);
 
+	private slots:
+		void processReadyRead();
+		void sendGreetingMessage();
+
 	private:
+		void processData();
+
 		int m_socketDescriptor;
+		QTcpSocket m_socket;
+		QByteArray m_buffer;
 
 };
 

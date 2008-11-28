@@ -25,18 +25,27 @@
 #include <QtNetwork>
 
 ClientThread::ClientThread(int socketDescriptor, QObject *parent)
-    : QThread(parent), m_socketDescriptor(socketDescriptor)
+	: QThread(parent), m_socketDescriptor(socketDescriptor)
 {
+}
+
+void ClientThread::sendGreetingMessage()
+{
+    QByteArray greeting = "foobar";
+    QByteArray data = "GREETING " + QByteArray::number(greeting.size()) + " " + greeting;
+    m_socket.write(data);
 }
 
 void ClientThread::run()
 {
-	QTcpSocket tcpSocket;
-	if (!tcpSocket.setSocketDescriptor(m_socketDescriptor)) {
-		emit error(tcpSocket.error());
+	if (!m_socket.setSocketDescriptor(m_socketDescriptor)) {
+		emit error(m_socket.error());
 		return;
 	}
 
+	QObject::connect(m_socket, SIGNAL(readyRead()), this, SLOT(processReadyRead()));
+	QObject::connect(m_socket, SIGNAL(connected()), this, SLOT(sendGreetingMessage()));
+/*
 	QString text = "foobar";
 	QByteArray block;
 	QDataStream out(&block, QIODevice::WriteOnly);
@@ -46,7 +55,34 @@ void ClientThread::run()
 	out.device()->seek(0);
 	out << (quint16)(block.size() - sizeof(quint16));
 
-	tcpSocket.write(block);
-	tcpSocket.disconnectFromHost();
-	tcpSocket.waitForDisconnected();
+	m_socket.write(block);
+	m_socket.disconnectFromHost();
+	m_socket.waitForDisconnected();
+*/
 }
+
+bool ClientThread::sendMessage(const QString &message)
+{
+	if (message.isEmpty())
+		return false;
+
+	QByteArray msg = message.toUtf8();
+	QByteArray data = "MESSAGE " + QByteArray::number(msg.size()) + " " + msg;
+	return m_socket.write(data) == data.size();
+}
+
+void ClientThread::processReadyRead()
+{
+	do {
+		processData();
+	} while (m_socket.bytesAvailable() > 0);
+}
+
+void ClientThread::processData()
+{
+	m_buffer = m_socket.readLine();
+	sendMessage(m_buffer);
+
+	m_buffer.clear();
+}
+
