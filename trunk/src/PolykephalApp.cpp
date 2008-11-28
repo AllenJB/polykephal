@@ -27,10 +27,10 @@
 PolykephalApp::PolykephalApp () {
 	m_server = new Server(this);
 	if (!m_server->listen()) {
-		qDebug("Unable to start the server: %s\n", m_server->errorString());
+		qDebug() << "Unable to start the server: " << m_server->errorString();
 		close(1);
 		return;
 	}
 
-	qDebug("Server running on port %d!", m_server->serverPort());
+	qDebug() << "Server running on port " << m_server->serverPort();
 }
