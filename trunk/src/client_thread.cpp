@@ -43,8 +43,8 @@ void ClientThread::run()
 		return;
 	}
 
-	QObject::connect(m_socket, SIGNAL(readyRead()), this, SLOT(processReadyRead()));
-	QObject::connect(m_socket, SIGNAL(connected()), this, SLOT(sendGreetingMessage()));
+	connect(&m_socket, SIGNAL(readyRead()), this, SLOT(processReadyRead()));
+	connect(&m_socket, SIGNAL(connected()), this, SLOT(sendGreetingMessage()));
 /*
 	QString text = "foobar";
 	QByteArray block;
