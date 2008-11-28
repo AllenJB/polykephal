@@ -25,7 +25,7 @@
 #include <QtNetwork>
 
 ClientThread::ClientThread(int socketDescriptor, QObject *parent)
-	: QThread(parent), m_socketDescriptor(socketDescriptor)
+	: QObject(parent), m_socketDescriptor(socketDescriptor)
 {
 }
 
@@ -68,6 +68,7 @@ bool ClientThread::sendMessage(const QString &message)
 
 	QByteArray msg = message.toUtf8();
 	QByteArray data = "MESSAGE " + QByteArray::number(msg.size()) + " " + msg;
+	qDebug() << "SEND >> " << data;
 	return m_socket.write(data) == data.size();
 }
 
@@ -81,6 +82,7 @@ void ClientThread::processReadyRead()
 void ClientThread::processData()
 {
 	m_buffer = m_socket.readLine();
+	qDebug() << "RECV << " << m_buffer;
 	sendMessage(m_buffer);
 
 	m_buffer.clear();

@@ -28,7 +28,7 @@
 
 static const int MaxBufferSize = 1024000;
 
-class ClientThread : public QThread
+class ClientThread : public QObject
 {
 	Q_OBJECT
 
