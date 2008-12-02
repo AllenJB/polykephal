@@ -15,9 +15,6 @@
     <description/>
     <defaultencoding/>
     <versioncontrol/>
-    <ignoreparts>
-      <part>kdevdistpart</part>
-    </ignoreparts>
   </general>
   <kdevfileview>
     <groups>
@@ -166,7 +163,6 @@
       <makebin/>
       <prio>0</prio>
       <envvars>
-        <envvar value="C" name="LC_ALL" />
         <envvar value="/usr/lib/qt4" name="QTDIR" />
       </envvars>
     </make>

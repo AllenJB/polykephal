@@ -47,6 +47,7 @@ class ClientThread : public QObject
 
 	private:
 		void processData();
+		QMap<QString, QString> decodeParams(QStringList parameterList);
 
 		int m_socketDescriptor;
 		QTcpSocket m_socket;
