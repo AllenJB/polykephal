@@ -85,6 +85,46 @@ void ClientThread::processData()
 	qDebug() << "RECV << " << m_buffer;
 	sendMessage(m_buffer);
 
+	// Decode the communication
+	QStringList parts = m_buffer.split(";");
 	m_buffer.clear();
+
+	if (parts.size() < 2) {
+		// No visible tag, send error: command not understood (no tag)
+		return;
+	}
+
+	Icecap::Cmd cmd;
+	cmd.tag = parts.takeFirst();
+	if (cmd.tag == "*") {
+		cmd.eventName = parts.takeFirst();
+	}
+
+	// Decode parameters
+	// FIXME The network / mypresence / channel values should either be removed or moved to a protocol specific location.
+	result.parameterList = decodeParams(parts);
+	if (result.parameterList.contains("network")) {
+		result.network = result.parameterList["network"];
+	}
+	if (result.parameterList.contains("mypresence")) {
+		result.mypresence = result.parameterList["mypresence"];
+	}
+	if (result.parameterList.contains("channel")) {
+		result.channel = result.parameterList["channel"];
+	}
 }
 
+// Split into key, value pairs around the first occurence of =
+QMap<QString,QString> ClientThread::decodeParams(QStringList parameterList)
+{
+	QMap<QString, QString> parameterMap;
+	QStringList::const_iterator end = parameterList.end();
+	for ( QStringList::const_iterator it = parameterList.begin(); it != end; ++it ) {
+		QStringList thisParam = QStringList::split("=", *it);
+		QString key = thisParam.first ();
+		thisParam.pop_front ();
+		QString value = thisParam.join ("=");
+		parameterMap.insert (key, value, TRUE);
+	}
+	return parameterMap;
+}
