@@ -32,8 +32,8 @@ Server::Server(QObject *parent)
 
 void Server::incomingConnection(int socketDescriptor)
 {
-	ClientThread *thread = new ClientThread(socketDescriptor, this);
-	connect(thread, SIGNAL(finished()), thread, SLOT(deleteLater()));
-	//thread->start();
-	thread->run();
+	ClientThread *connection = new ClientThread(this);
+	connection->setSocketDescriptor(socketDescriptor);
+	connection->sendGreetingMessage();
+    emit newConnection(connection);
 }

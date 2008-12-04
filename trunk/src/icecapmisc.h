@@ -20,6 +20,8 @@
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   THE SOFTWARE.
 */
+#ifndef ICECAPMISC_H
+#define ICECAPMISC_H
 
 #include <qmap.h>
 #include <qstring.h>
@@ -36,14 +38,14 @@ namespace Icecap
         QString status;  // either +, > or - (success / finished, more-to-come or failure)
         QString command; // Holds event name if an event
         QMap<QString,QString> parameterList;
-        // Used only when status is "-"
-        QString error;
 
-        // The below values are only used for the IcecapServer::event slot
-        QString sentCommand;
         QString network;
         QString mypresence;
         QString channel;
+
+        QString sentCommand;
         QMap<QString, QString> sentParameterList;
     } Cmd;
 }
+
+#endif

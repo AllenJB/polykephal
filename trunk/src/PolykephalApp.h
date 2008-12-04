@@ -20,6 +20,9 @@
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   THE SOFTWARE.
 */
+#ifndef POLYKEPHALAPP_H
+#define POLYKEPHALAPP_H
+
 #include <QObject>
 #include <QtNetwork>
 
@@ -36,3 +39,5 @@ class PolykephalApp : public QObject
 		Server *m_server;
 
 };
+
+#endif
