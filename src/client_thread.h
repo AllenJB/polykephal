@@ -28,29 +28,24 @@
 
 static const int MaxBufferSize = 1024000;
 
-class ClientThread : public QObject
+class ClientThread : public QTcpSocket
 {
 	Q_OBJECT
 
 	public:
-		ClientThread(int socketDescriptor, QObject *parent);
+		ClientThread(QObject *parent);
 
 		void run();
 		bool sendMessage(const QString &message);
-
-	signals:
-		void error(QTcpSocket::SocketError socketError);
+		void sendGreetingMessage();
 
 	private slots:
 		void processReadyRead();
-		void sendGreetingMessage();
 
 	private:
 		void processData();
 		QMap<QString, QString> decodeParams(QStringList parameterList);
 
-		int m_socketDescriptor;
-		QTcpSocket m_socket;
 		QByteArray m_buffer;
 
 };

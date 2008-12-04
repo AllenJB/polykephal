@@ -21,44 +21,35 @@
   THE SOFTWARE.
 */
 #include "client_thread.h"
+#include "icecapmisc.h"
 
 #include <QtNetwork>
+#include <QMap>
+#include <QString>
+#include <QStringList>
 
-ClientThread::ClientThread(int socketDescriptor, QObject *parent)
-	: QObject(parent), m_socketDescriptor(socketDescriptor)
+ClientThread::ClientThread(QObject *parent)
+	: QTcpSocket(parent)
 {
+	connect(this, SIGNAL(readyRead()), this, SLOT(processReadyRead()));
+	connect(this, SIGNAL(connected()), this, SLOT(sendGreetingMessage()));
 }
 
 void ClientThread::sendGreetingMessage()
 {
-    QByteArray greeting = "foobar";
-    QByteArray data = "GREETING " + QByteArray::number(greeting.size()) + " " + greeting;
-    m_socket.write(data);
+	qDebug() << "DEBUG: sendGreetingMessage";
+	QByteArray greeting = "GREETING foobar";
+	QByteArray data = "GREETING " + QByteArray::number(greeting.size()) + " " + greeting;
+	//sendMessage(greeting);
+	if (write(data) == data.size()) {
+		qDebug() << "DEBUG: Greeting message sent.";
+	}
+
 }
 
 void ClientThread::run()
 {
-	if (!m_socket.setSocketDescriptor(m_socketDescriptor)) {
-		emit error(m_socket.error());
-		return;
-	}
 
-	connect(&m_socket, SIGNAL(readyRead()), this, SLOT(processReadyRead()));
-	connect(&m_socket, SIGNAL(connected()), this, SLOT(sendGreetingMessage()));
-/*
-	QString text = "foobar";
-	QByteArray block;
-	QDataStream out(&block, QIODevice::WriteOnly);
-	out.setVersion(QDataStream::Qt_4_0);
-	out << (quint16)0;
-	out << text;
-	out.device()->seek(0);
-	out << (quint16)(block.size() - sizeof(quint16));
-
-	m_socket.write(block);
-	m_socket.disconnectFromHost();
-	m_socket.waitForDisconnected();
-*/
 }
 
 bool ClientThread::sendMessage(const QString &message)
@@ -69,24 +60,25 @@ bool ClientThread::sendMessage(const QString &message)
 	QByteArray msg = message.toUtf8();
 	QByteArray data = "MESSAGE " + QByteArray::number(msg.size()) + " " + msg;
 	qDebug() << "SEND >> " << data;
-	return m_socket.write(data) == data.size();
+	return write(data) == data.size();
 }
 
 void ClientThread::processReadyRead()
 {
 	do {
 		processData();
-	} while (m_socket.bytesAvailable() > 0);
+	} while (bytesAvailable() > 0);
 }
 
 void ClientThread::processData()
 {
-	m_buffer = m_socket.readLine();
+	m_buffer = readLine();
 	qDebug() << "RECV << " << m_buffer;
 	sendMessage(m_buffer);
+	QString strBuffer = m_buffer;
 
 	// Decode the communication
-	QStringList parts = m_buffer.split(";");
+	QStringList parts = strBuffer.split(';');
 	m_buffer.clear();
 
 	if (parts.size() < 2) {
@@ -96,35 +88,34 @@ void ClientThread::processData()
 
 	Icecap::Cmd cmd;
 	cmd.tag = parts.takeFirst();
-	if (cmd.tag == "*") {
-		cmd.eventName = parts.takeFirst();
-	}
+	cmd.command = parts.takeFirst();
 
 	// Decode parameters
-	// FIXME The network / mypresence / channel values should either be removed or moved to a protocol specific location.
-	result.parameterList = decodeParams(parts);
-	if (result.parameterList.contains("network")) {
-		result.network = result.parameterList["network"];
+	// network is the minimal required information to determine the protocol
+	cmd.parameterList = decodeParams(parts);
+	if (cmd.parameterList.contains("network")) {
+		cmd.network = cmd.parameterList["network"];
 	}
-	if (result.parameterList.contains("mypresence")) {
-		result.mypresence = result.parameterList["mypresence"];
+	if (cmd.parameterList.contains("mypresence")) {
+		cmd.mypresence = cmd.parameterList["mypresence"];
 	}
-	if (result.parameterList.contains("channel")) {
-		result.channel = result.parameterList["channel"];
+	if (cmd.parameterList.contains("channel")) {
+		cmd.channel = cmd.parameterList["channel"];
 	}
 }
 
-// Split into key, value pairs around the first occurence of =
+/// Split into key, value pairs around the first occurence of =
 QMap<QString,QString> ClientThread::decodeParams(QStringList parameterList)
 {
 	QMap<QString, QString> parameterMap;
 	QStringList::const_iterator end = parameterList.end();
 	for ( QStringList::const_iterator it = parameterList.begin(); it != end; ++it ) {
-		QStringList thisParam = QStringList::split("=", *it);
+		QString curParam = *it;
+		QStringList thisParam = curParam.split("=");
 		QString key = thisParam.first ();
 		thisParam.pop_front ();
 		QString value = thisParam.join ("=");
-		parameterMap.insert (key, value, TRUE);
+		parameterMap.insert (key, value);
 	}
 	return parameterMap;
 }

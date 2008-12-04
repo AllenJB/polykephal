@@ -21,12 +21,14 @@
   THE SOFTWARE.
 */
 #include "PolykephalApp.h"
+#include "server.h"
+
 #include <QtNetwork>
 #include <string>
 
 PolykephalApp::PolykephalApp () {
 	m_server = new Server(this);
-	if (!m_server->listen()) {
+	if (!m_server->listen(QHostAddress::Any, 42000)) {
 		qDebug() << "Unable to start the server: " << m_server->errorString();
 		close(1);
 		return;

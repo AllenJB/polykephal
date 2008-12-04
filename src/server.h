@@ -23,6 +23,8 @@
 #ifndef SERVER_H
 #define SERVER_H
 
+#include "client_thread.h"
+
 #include <QTcpServer>
 
 class Server : public QTcpServer
@@ -31,6 +33,9 @@ class Server : public QTcpServer
 
 	public:
 		Server(QObject *parent = 0);
+
+	signals:
+		void newConnection(ClientThread *connection);
 
 	protected:
 		void incomingConnection(int socketDescriptor);
