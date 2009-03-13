@@ -28,55 +28,58 @@
 #include <QDateTime>
 #include <QObject>
 
-namespace PK { };
-using namespace PK;
-
-class IcecapEvent : public QObject
+namespace PK
 {
-	Q_OBJECT
 
-	public:
-		typedef enum
-		{
-			SUnset,
-			SSuccess,
-			SFail,
-			SMore
-		} Status;
+	class IcecapEvent : public QObject
+	{
+		Q_OBJECT
+	
+		public:
+			typedef enum
+			{
+				SUnset,
+				SSuccess,
+				SFail,
+				SMore
+			} Status;
+	
+			// Command to send
+			IcecapEvent(QString tag, Status status);
+	
+			// Received command
+			IcecapEvent(QString tag, QString command);
+	
+			// Event (received or to send)
+			IcecapEvent(QString eventName);
+	
+			void setTimestamp();
+			void setTimestamp(QString timestamp);
+			const QString getTimestamp();
+	
+			void setParameter(QString key, QString value);
+			const QString getParameter(QString key);
+	
+			const char getStatusString();
+	
+			const QString getTag();
+			const QString getCommand();
+	
+			const QString toIcecapMessage();
+	
+		private:
+			const QString getParameterString();
+			const Status getStatus();
+	
+			QDateTime m_timestamp;
+			QString m_tag;
+			Status m_status;
+			/// Holds event name if an event
+			QString m_command;
+			QMap<QString,QString> m_parameterList;
+	
+	};
 
-		// Command to send
-		IcecapEvent(QString tag, QString command, Status status);
-
-		// Received command
-		IcecapEvent(QString tag, QString command);
-
-		// Event (received or to send)
-		IcecapEvent(QString eventName);
-
-		void setTimestamp();
-		void setTimestamp(QString timestamp);
-		QString getTimestamp();
-
-		void setParameter(QString key, QString value);
-		QString getParameter(QString key);
-
-		char getStatusString();
-
-		QString getTag();
-		QString getCommand();
-
-		QString toIcecapMessage();
-
-	private:
-		QString getParameterString();
-
-		QDateTime m_timestamp;
-		QString m_tag;
-		Status m_status;
-		/// Holds event name if an event
-		QString m_command;
-		QMap<QString,QString> m_parameterList;
-
-};
+}
 
 #endif

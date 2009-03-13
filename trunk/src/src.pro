@@ -10,7 +10,6 @@ DESTDIR = ../bin
 QT -= gui
 QT += network
 HEADERS += PolykephalApp.h \
- icecapmisc.h \
  server.h \
  client_thread.h \
  IcecapEvent.h
