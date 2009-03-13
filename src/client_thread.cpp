@@ -21,7 +21,7 @@
   THE SOFTWARE.
 */
 #include "client_thread.h"
-#include "icecapmisc.h"
+#include "IcecapEvent.h"
 
 #include <QtNetwork>
 #include <QMap>
@@ -38,9 +38,9 @@ ClientThread::ClientThread(QObject *parent)
 
 void ClientThread::sendGreetingMessage()
 {
-	QDateTime dt = QDateTime::currentDateTime();
-	QString greeting = QString("*;preauth;time=%1.%2;remote_ip=%3").arg(dt.toTime_t()).arg(dt.toString("zzz")).arg(this->peerAddress().toString());
-	sendMessage(greeting);
+	PK::IcecapEvent event("preauth");
+	event.setParameter("remote_ip", this->peerAddress().toString());
+	sendMessage(event);
 }
 
 void ClientThread::run()
@@ -48,13 +48,12 @@ void ClientThread::run()
 
 }
 
-bool ClientThread::sendMessage(const QString &message)
+// TODO We should be able to have this param const - why won't it let us?
+bool ClientThread::sendMessage(PK::IcecapEvent &message)
 {
-	if (message.isEmpty())
-		return false;
-
-	QByteArray data = message.toUtf8() +"\n";
-	qDebug() << "SEND >> " << message.toUtf8();
+	QString datastr = message.toIcecapMessage() +"\n";
+	QByteArray data = datastr.toUtf8();
+	qDebug() << "SEND >> " << message.toIcecapMessage();
 	return write(data) == data.size();
 }
 
@@ -90,41 +89,23 @@ void ClientThread::processData()
 	if (parts.size() < 2) {
 		// No visible tag, send error: command not understood (no tag)
 		// Currently this acts exactly the same as icecapd
-		QDateTime dt = QDateTime::currentDateTime();
-		sendMessage(QString("%1;-;bad;time=%2.%3").arg(strBuffer).arg(dt.toTime_t()).arg(dt.toString("zzz")));
+		PK::IcecapEvent event(strBuffer, PK::IcecapEvent::SFail);
+		event.setParameter("bad", "");
+		sendMessage(event);
+		//sendMessage(QString("%1;-;bad;time=%2.%3").arg(strBuffer).arg(dt.toTime_t()).arg(dt.toString("zzz")));
 		return;
 	}
 
-	Icecap::Cmd cmd;
-	cmd.tag = parts.takeFirst();
-	cmd.command = parts.takeFirst();
+	PK::IcecapEvent cmd(parts.takeFirst(), parts.takeFirst());
 
 	// Decode parameters
-	// network is the minimal required information to determine the protocol
-	cmd.parameterList = decodeParams(parts);
-	if (cmd.parameterList.contains("network")) {
-		cmd.network = cmd.parameterList["network"];
-	}
-	if (cmd.parameterList.contains("mypresence")) {
-		cmd.mypresence = cmd.parameterList["mypresence"];
-	}
-	if (cmd.parameterList.contains("channel")) {
-		cmd.channel = cmd.parameterList["channel"];
-	}
-}
-
-/// Split into key, value pairs around the first occurence of =
-QMap<QString,QString> ClientThread::decodeParams(QStringList parameterList)
-{
-	QMap<QString, QString> parameterMap;
-	QStringList::const_iterator end = parameterList.end();
-	for ( QStringList::const_iterator it = parameterList.begin(); it != end; ++it ) {
+	QStringList::const_iterator end = parts.end();
+	for ( QStringList::const_iterator it = parts.begin(); it != end; ++it ) {
 		QStringList thisParam = (*it).split("=");
 		QString key = thisParam.takeFirst ();
 		QString value = thisParam.join ("=");
-		parameterMap.insert (key, value);
+		cmd.setParameter (key, value);
 	}
-	return parameterMap;
 }
 
 /// Translate the given string to hex with space between values

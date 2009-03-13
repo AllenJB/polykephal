@@ -29,6 +29,8 @@
 #include <QMap>
 #include <QByteArray>
 
+#include "IcecapEvent.h"
+
 static const int MaxBufferSize = 1024000;
 
 class ClientThread : public QTcpSocket
@@ -39,7 +41,7 @@ class ClientThread : public QTcpSocket
 		ClientThread(QObject *parent);
 
 		void run();
-		bool sendMessage(const QString &message);
+		bool sendMessage(PK::IcecapEvent &message);
 		void sendGreetingMessage();
 
 	private slots:
@@ -48,7 +50,6 @@ class ClientThread : public QTcpSocket
 
 	private:
 		void processData();
-		QMap<QString, QString> decodeParams(QStringList parameterList);
 
 		QByteArray m_buffer;
 
