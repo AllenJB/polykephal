@@ -28,6 +28,8 @@
 
 #include "server.h"
 
+namespace PK {};
+
 class PolykephalApp : public QObject
 {
 	Q_OBJECT

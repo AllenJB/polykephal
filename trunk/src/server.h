@@ -33,6 +33,7 @@ class Server : public QTcpServer
 
 	public:
 		Server(QObject *parent = 0);
+		void shutdown();
 
 	signals:
 		void newConnection(ClientThread *connection);

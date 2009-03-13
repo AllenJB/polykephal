@@ -20,29 +20,63 @@
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   THE SOFTWARE.
 */
-#include <stdlib.h>
+#ifndef ICECAPEVENT_H
+#define ICECAPEVENT_H
 
-#include "server.h"
-#include "client_thread.h"
+#include <QString>
+#include <QMap>
+#include <QDateTime>
+#include <QObject>
 
-Server::Server(QObject *parent)
-	: QTcpServer(parent)
+namespace PK { };
+using namespace PK;
+
+class IcecapEvent : public QObject
 {
-}
+	Q_OBJECT
 
-void Server::incomingConnection(int socketDescriptor)
-{
-	ClientThread *connection = new ClientThread(this);
-	connection->setSocketDescriptor(socketDescriptor);
-	connection->sendGreetingMessage();
-	emit newConnection(connection);
-}
+	public:
+		typedef enum
+		{
+			SUnset,
+			SSuccess,
+			SFail,
+			SMore
+		} Status;
 
-void Server::shutdown()
-{
-	// TODO Broadcast to all clients
-	// TODO Disconnect from all networks
-	// TODO Disconnect all clients (except requesting client)
-	// TODO Disconnect requesting client
-	// TODO Shutdown application
-}
+		// Command to send
+		IcecapEvent(QString tag, QString command, Status status);
+
+		// Received command
+		IcecapEvent(QString tag, QString command);
+
+		// Event (received or to send)
+		IcecapEvent(QString eventName);
+
+		void setTimestamp();
+		void setTimestamp(QString timestamp);
+		QString getTimestamp();
+
+		void setParameter(QString key, QString value);
+		QString getParameter(QString key);
+
+		char getStatusString();
+
+		QString getTag();
+		QString getCommand();
+
+		QString toIcecapMessage();
+
+	private:
+		QString getParameterString();
+
+		QDateTime m_timestamp;
+		QString m_tag;
+		Status m_status;
+		/// Holds event name if an event
+		QString m_command;
+		QMap<QString,QString> m_parameterList;
+
+};
+
+#endif

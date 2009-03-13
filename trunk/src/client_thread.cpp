@@ -27,24 +27,20 @@
 #include <QMap>
 #include <QString>
 #include <QStringList>
+#include <QDateTime>
+#include <QRegExp>
 
 ClientThread::ClientThread(QObject *parent)
 	: QTcpSocket(parent)
 {
 	connect(this, SIGNAL(readyRead()), this, SLOT(processReadyRead()));
-	connect(this, SIGNAL(connected()), this, SLOT(sendGreetingMessage()));
 }
 
 void ClientThread::sendGreetingMessage()
 {
-	qDebug() << "DEBUG: sendGreetingMessage";
-	QByteArray greeting = "GREETING foobar";
-	QByteArray data = "GREETING " + QByteArray::number(greeting.size()) + " " + greeting;
-	//sendMessage(greeting);
-	if (write(data) == data.size()) {
-		qDebug() << "DEBUG: Greeting message sent.";
-	}
-
+	QDateTime dt = QDateTime::currentDateTime();
+	QString greeting = QString("*;preauth;time=%1.%2;remote_ip=%3").arg(dt.toTime_t()).arg(dt.toString("zzz")).arg(this->peerAddress().toString());
+	sendMessage(greeting);
 }
 
 void ClientThread::run()
@@ -57,9 +53,8 @@ bool ClientThread::sendMessage(const QString &message)
 	if (message.isEmpty())
 		return false;
 
-	QByteArray msg = message.toUtf8();
-	QByteArray data = "MESSAGE " + QByteArray::number(msg.size()) + " " + msg;
-	qDebug() << "SEND >> " << data;
+	QByteArray data = message.toUtf8() +"\n";
+	qDebug() << "SEND >> " << message.toUtf8();
 	return write(data) == data.size();
 }
 
@@ -73,9 +68,20 @@ void ClientThread::processReadyRead()
 void ClientThread::processData()
 {
 	m_buffer = readLine();
-	qDebug() << "RECV << " << m_buffer;
-	sendMessage(m_buffer);
+
+	// Get rid of line endings (deals with all 3 possibilities: \r, \n and \r\n)
+	if (m_buffer.endsWith('\n')) {
+		m_buffer.remove(m_buffer.size() - 1, 1);
+	}
+	if (m_buffer.endsWith('\r')) {
+		m_buffer.remove(m_buffer.size() - 1, 1);
+	}
+
 	QString strBuffer = m_buffer;
+	// QString strBuffer = m_buffer.remove(m_buffer.size() -1, 1);
+	// qDebug() << "RECV << " << m_buffer;
+	qDebug() << "RECV << " << toHexString(strBuffer);
+	// sendMessage(m_buffer);
 
 	// Decode the communication
 	QStringList parts = strBuffer.split(';');
@@ -83,6 +89,9 @@ void ClientThread::processData()
 
 	if (parts.size() < 2) {
 		// No visible tag, send error: command not understood (no tag)
+		// Currently this acts exactly the same as icecapd
+		QDateTime dt = QDateTime::currentDateTime();
+		sendMessage(QString("%1;-;bad;time=%2.%3").arg(strBuffer).arg(dt.toTime_t()).arg(dt.toString("zzz")));
 		return;
 	}
 
@@ -110,12 +119,16 @@ QMap<QString,QString> ClientThread::decodeParams(QStringList parameterList)
 	QMap<QString, QString> parameterMap;
 	QStringList::const_iterator end = parameterList.end();
 	for ( QStringList::const_iterator it = parameterList.begin(); it != end; ++it ) {
-		QString curParam = *it;
-		QStringList thisParam = curParam.split("=");
-		QString key = thisParam.first ();
-		thisParam.pop_front ();
+		QStringList thisParam = (*it).split("=");
+		QString key = thisParam.takeFirst ();
 		QString value = thisParam.join ("=");
 		parameterMap.insert (key, value);
 	}
 	return parameterMap;
+}
+
+/// Translate the given string to hex with space between values
+QString ClientThread::toHexString(QString strBuffer)
+{
+	return QString(strBuffer.toAscii().toHex().toUpper()).replace(QRegExp("([0-9A-Fa-f]{2})"), QString("\\1 "));
 }
