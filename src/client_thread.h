@@ -25,6 +25,9 @@
 
 #include <QThread>
 #include <QTcpSocket>
+#include <QString>
+#include <QMap>
+#include <QByteArray>
 
 static const int MaxBufferSize = 1024000;
 
@@ -41,6 +44,7 @@ class ClientThread : public QTcpSocket
 
 	private slots:
 		void processReadyRead();
+		QString toHexString(QString strBuffer);
 
 	private:
 		void processData();
