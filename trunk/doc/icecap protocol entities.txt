@@ -1,0 +1,25 @@
+network {
+	name
+	protocol
+}
+
+gateway {
+	host
+	network
+	(port)
+	(priority)
+	(password)
+}
+
+presence {
+	network
+	mypresence
+	autoconnect
+}
+
+channel {
+	network
+	mypresence
+	channel
+	(password)
+}
