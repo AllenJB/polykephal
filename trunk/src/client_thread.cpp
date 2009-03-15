@@ -106,6 +106,24 @@ void ClientThread::processData()
 		QString value = thisParam.join ("=");
 		cmd.setParameter (key, value);
 	}
+
+	// Pass the command to the relevent code
+	handleEvent(cmd);
+}
+
+
+void ClientThread::handleCommand(PK::IcecapEvent &event)
+{
+	// If the command has not "network" parameter, it's dealt with by "core"
+	// Otherwise look up the protocol for the network and pass it to the relevent handler
+	// TODO Allow for scripts to received commands, both with and without network set
+	if (event.getParameter("network") == NULL) {
+		// Handle core commands / events
+		return;
+	}
+
+	// Look up protocol and pass to protocol specific handler
+	// We probably want to implement a plugin architecture here
 }
 
 /// Translate the given string to hex with space between values
