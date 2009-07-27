@@ -1,0 +1,15 @@
+Stored in memory:
+- Users - High volatility (parts / joins / netsplits / away status / channels on)
+- Channels - Moderate volatility (join / part / mode changes / topic changes)
+- Servers - Low volatility, but may want to reference
+- Networks - V Low volatillity, but may want to reference
+
+Stored on disk:
+- Logs
+- Backlogs (via logs)
+- Server Configuration
+- Client Configuration
+
+TODO:
+- Measure and keep track of size of objects stored in memory
+- When backlogs are requested, we should always process on the fly - don't load them into memory where possible.
