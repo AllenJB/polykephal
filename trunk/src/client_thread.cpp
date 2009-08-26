@@ -22,6 +22,7 @@
 */
 #include "client_thread.h"
 #include "IcecapEvent.h"
+#include "server.h"
 
 #include <QtNetwork>
 #include <QMap>
@@ -48,8 +49,7 @@ void ClientThread::run()
 
 }
 
-// TODO We should be able to have this param const - why won't it let us?
-bool ClientThread::sendMessage(PK::IcecapEvent &message)
+bool ClientThread::sendMessage(const PK::IcecapEvent &message)
 {
 	QString datastr = message.toIcecapMessage() +"\n";
 	QByteArray data = datastr.toUtf8();
@@ -96,7 +96,9 @@ void ClientThread::processData()
 		return;
 	}
 
-	PK::IcecapEvent cmd(parts.takeFirst(), parts.takeFirst());
+	QString tag = parts.takeFirst();
+	QString cmd = parts.takeFirst();
+	PK::IcecapEvent event(tag, cmd);
 
 	// Decode parameters
 	QStringList::const_iterator end = parts.end();
@@ -104,21 +106,30 @@ void ClientThread::processData()
 		QStringList thisParam = (*it).split("=");
 		QString key = thisParam.takeFirst ();
 		QString value = thisParam.join ("=");
-		cmd.setParameter (key, value);
+		event.setParameter (key, value);
 	}
 
 	// Pass the command to the relevent code
-	handleEvent(cmd);
+	handleEvent(event);
 }
 
 
-void ClientThread::handleCommand(PK::IcecapEvent &event)
+void ClientThread::handleEvent(PK::IcecapEvent &event)
 {
 	// If the command has not "network" parameter, it's dealt with by "core"
 	// Otherwise look up the protocol for the network and pass it to the relevent handler
-	// TODO Allow for scripts to received commands, both with and without network set
+	// TODO Allow for scripts to receive commands, both with and without network set
+	qDebug() << "handleEvent :: tag: " << event.getTag() << "; command: " << event.getCommand();
+
 	if (event.getParameter("network") == NULL) {
 		// Handle core commands / events
+
+		if (event.getCommand() == "shutdown") {
+			// Call server shutdown
+			qDebug() << "handleEvent: shutdown";
+			Server* server = (Server*) this->parent();
+			server->shutdown();
+		}
 		return;
 	}
 
@@ -126,8 +137,13 @@ void ClientThread::handleCommand(PK::IcecapEvent &event)
 	// We probably want to implement a plugin architecture here
 }
 
+void ClientThread::shutdown()
+{
+	disconnectFromHost();
+}
+
 /// Translate the given string to hex with space between values
-QString ClientThread::toHexString(QString strBuffer)
+QString ClientThread::toHexString(const QString strBuffer)
 {
 	return QString(strBuffer.toAscii().toHex().toUpper()).replace(QRegExp("([0-9A-Fa-f]{2})"), QString("\\1 "));
 }

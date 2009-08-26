@@ -26,7 +26,13 @@
 #include <QtNetwork>
 #include <string>
 
-PolykephalApp::PolykephalApp () {
+PolykephalApp::PolykephalApp ( int & argc, char ** argv )
+	: QCoreApplication(argc, argv)
+{
+}
+
+void PolykephalApp::startup()
+{
 	m_server = new Server(this);
 	if (!m_server->listen(QHostAddress::Any, 42000)) {
 		qDebug() << "Unable to start the server: " << m_server->errorString();
@@ -35,4 +41,9 @@ PolykephalApp::PolykephalApp () {
 	}
 
 	qDebug() << "Server running on port " << m_server->serverPort();
+}
+
+void PolykephalApp::shutdown()
+{
+	this->exit();
 }

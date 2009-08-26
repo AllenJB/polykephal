@@ -28,6 +28,8 @@
 #include <QString>
 #include <QMap>
 #include <QByteArray>
+#include <QSemaphore>
+
 
 #include "IcecapEvent.h"
 
@@ -41,18 +43,19 @@ class ClientThread : public QTcpSocket
 		ClientThread(QObject *parent);
 
 		void run();
-		bool sendMessage(PK::IcecapEvent &message);
+		bool sendMessage(const PK::IcecapEvent &message);
 		void sendGreetingMessage();
+		void shutdown();
 
 	private slots:
 		void processReadyRead();
-		QString toHexString(QString strBuffer);
+		QString toHexString(const QString strBuffer);
 
 	private:
 		void processData();
+		void handleEvent(PK::IcecapEvent &event);
 
 		QByteArray m_buffer;
-
 };
 
 #endif

@@ -29,11 +29,13 @@
 
 int main(int argc, char *argv[])
 {
-	QCoreApplication app(argc, argv);
+//	QCoreApplication app(argc, argv);
+//	PolykephalApp *apps = new PolykephalApp();
+//	return app.exec();
+
+	PolykephalApp app(argc, argv);
 	qDebug("Hello from Qt 4!");
-
-	PolykephalApp *apps = new PolykephalApp();
-
+	app.startup();
 	return app.exec();
 }
 

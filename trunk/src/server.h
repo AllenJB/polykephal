@@ -25,6 +25,7 @@
 
 #include "client_thread.h"
 
+#include <QList>
 #include <QTcpServer>
 
 class Server : public QTcpServer
@@ -34,6 +35,7 @@ class Server : public QTcpServer
 	public:
 		Server(QObject *parent = 0);
 		void shutdown();
+		void broadcast(PK::IcecapEvent &event);
 
 	signals:
 		void newConnection(ClientThread *connection);
@@ -41,6 +43,8 @@ class Server : public QTcpServer
 	protected:
 		void incomingConnection(int socketDescriptor);
 
+	private:
+		QList<ClientThread*> m_connectionList;
 };
 
 #endif

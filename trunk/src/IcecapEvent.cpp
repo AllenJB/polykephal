@@ -77,7 +77,7 @@ namespace PK
 		m_timestamp = dt;
 	}
 	
-	const QString IcecapEvent::getTimestamp()
+	QString IcecapEvent::getTimestamp() const
 	{
 		return QString("%1.%2").arg(m_timestamp.toTime_t()).arg(m_timestamp.toString("zzz"));
 	}
@@ -87,7 +87,7 @@ namespace PK
 		m_parameterList.insert(key, value);
 	}
 	
-	const QString IcecapEvent::getParameter(QString key)
+	QString IcecapEvent::getParameter(QString key) const
 	{
 		if (m_parameterList.contains(key)) {
 			return m_parameterList.value(key);
@@ -95,7 +95,7 @@ namespace PK
 		return NULL;
 	}
 	
-	const char IcecapEvent::getStatusString()
+	char IcecapEvent::getStatusString() const
 	{
 		// TODO Test if we need a null check here
 		switch (m_status) {
@@ -108,7 +108,7 @@ namespace PK
 		return '?';
 	}
 	
-	const QString IcecapEvent::getTag()
+	QString IcecapEvent::getTag() const
 	{
 		if (m_tag == NULL) {
 			return "*";
@@ -116,17 +116,17 @@ namespace PK
 		return m_tag;
 	}
 	
-	const QString IcecapEvent::getCommand()
+	QString IcecapEvent::getCommand() const
 	{
 		return m_command;
 	}
 
-	const IcecapEvent::Status IcecapEvent::getStatus()
+	IcecapEvent::Status IcecapEvent::getStatus() const
 	{
 		return m_status;
 	}
 	
-	const QString IcecapEvent::toIcecapMessage()
+	QString IcecapEvent::toIcecapMessage() const
 	{
 		// TODO Ensure this returns a UTF8 string
 	
@@ -146,7 +146,7 @@ namespace PK
 		}
 	}
 	
-	const QString IcecapEvent::getParameterString()
+	QString IcecapEvent::getParameterString() const
 	{
 		QString retVal = "";
 		QMap<QString,QString>::const_iterator end = m_parameterList.end();

@@ -23,6 +23,7 @@
 #ifndef POLYKEPHALAPP_H
 #define POLYKEPHALAPP_H
 
+#include <QCoreApplication>
 #include <QObject>
 #include <QtNetwork>
 
@@ -30,12 +31,14 @@
 
 namespace PK {};
 
-class PolykephalApp : public QObject
+class PolykephalApp : public QCoreApplication
 {
 	Q_OBJECT
 
 	public:
-		PolykephalApp();
+		PolykephalApp(int & argc, char ** argv);
+		void startup();
+		void shutdown();
 
 	private:
 		Server *m_server;
