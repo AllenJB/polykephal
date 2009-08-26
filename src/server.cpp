@@ -24,6 +24,11 @@
 
 #include "server.h"
 #include "client_thread.h"
+#include "PolykephalApp.h"
+
+#include <QListIterator>
+#include <QMutableListIterator>
+#include <QWaitCondition>
 
 Server::Server(QObject *parent)
 	: QTcpServer(parent)
@@ -35,14 +40,40 @@ void Server::incomingConnection(int socketDescriptor)
 	ClientThread *connection = new ClientThread(this);
 	connection->setSocketDescriptor(socketDescriptor);
 	connection->sendGreetingMessage();
+	m_connectionList.append(connection);
 	emit newConnection(connection);
 }
 
 void Server::shutdown()
 {
-	// TODO Broadcast to all clients
 	// TODO Disconnect from all networks
-	// TODO Disconnect all clients (except requesting client)
-	// TODO Disconnect requesting client
-	// TODO Shutdown application
+		// Iterate over list of connected networks; Call disconnect
+
+	// Disconnect all clients
+	PK::IcecapEvent event("shutdown", PK::IcecapEvent::SSuccess);
+
+	QMutableListIterator<ClientThread*> it( m_connectionList );
+	while (it.hasNext()) {
+		qDebug() << "Sending shutdown event";
+		ClientThread* current = it.next();
+		current->sendMessage(event);
+		current->shutdown();
+ 		current->waitForDisconnected(10000);
+		it.remove();
+	}
+
+	// Shutdown application
+	PolykephalApp* app = (PolykephalApp*) this->parent();
+	app->shutdown();
+
 }
+
+void Server::broadcast(PK::IcecapEvent &event)
+{
+	QListIterator<ClientThread*> it( m_connectionList );
+	while (it.hasNext()) {
+		ClientThread* current = it.next();
+		current->sendMessage(event);
+	}
+}
+

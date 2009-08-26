@@ -55,21 +55,21 @@ namespace PK
 	
 			void setTimestamp();
 			void setTimestamp(QString timestamp);
-			const QString getTimestamp();
+			QString getTimestamp() const;
 	
 			void setParameter(QString key, QString value);
-			const QString getParameter(QString key);
+			QString getParameter(QString key) const;
 	
-			const char getStatusString();
+			char getStatusString() const;
 	
-			const QString getTag();
-			const QString getCommand();
+			QString getTag() const;
+			QString getCommand() const;
 	
-			const QString toIcecapMessage();
+			QString toIcecapMessage() const;
 	
 		private:
-			const QString getParameterString();
-			const Status getStatus();
+			QString getParameterString() const;
+			Status getStatus() const;
 	
 			QDateTime m_timestamp;
 			QString m_tag;
